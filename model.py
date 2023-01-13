@@ -15,12 +15,10 @@ def main():
 
 class audio_model(torch.nn.Module):
 
-    def __init__(self, num_features=13 ,num_hidden=13 ,num_layers = 50, num_class = 10, length = 1132):
+    def __init__(self, num_features=13 ,num_hidden=512 , num_class = 4, length = 1132):
         super(audio_model,self).__init__()
         # TODO Mask
-        self.lstm1 = torch.nn.LSTM(input_size=num_features,hidden_size=num_hidden,num_layers=num_layers,
-                                   batch_first=True)
-        self.lstm2 = torch.nn.LSTM(input_size=num_hidden, hidden_size=num_hidden, num_layers=num_layers,
+        self.lstm = torch.nn.LSTM(input_size=num_features,hidden_size=num_hidden,num_layers=2,
                                    batch_first=True)
         self.flat = torch.nn.Flatten()
         self.lin = torch.nn.Linear(in_features=num_hidden*length,out_features=num_class)
@@ -28,8 +26,7 @@ class audio_model(torch.nn.Module):
 
 
     def forward(self, input):
-        x, states = self.lstm1(input)
-        x, states = self.lstm2(x)
+        x, states = self.lstm(input)
         x = self.flat(x)
         x = self.lin(x)
         x = self.softmax(x)

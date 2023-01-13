@@ -15,7 +15,7 @@ feat = 13
 
 
 def main():
-    produce_from_raw(DATA_PATH, new_dir=PROCESSED_PATH)
+    produce_from_raw(DATA_PATH, new_dir=PROCESSED_PATH,norm_ax=True)
 
     train = []
     test = []
@@ -110,8 +110,11 @@ def produce_from_raw(path, channels=1, sr=8000, subtype="PCM_16", new_dir="", wa
             numpy.save(newdir[:-4] + ".npy", melfreq)
 
 
+
+
 def produce_from_raw_intern(path, channels=1, sr=8000, subtype="PCM_16", new_dir="", wav=True, mfcc=False, normMfcc=True,
                        norm_ax=False):
+    print(path)
     for data in os.listdir(path):
         if os.path.isdir(os.path.join(path, data)):
 
