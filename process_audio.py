@@ -137,11 +137,19 @@ def produce_from_raw_intern(path, channels=1, sr=8000, subtype="PCM_16", new_dir
             if mfcc:
                 numpy.save(os.path.join(newdir, data[:-4] + "_notNorm.npy"), melfreq)
             if norm_ax:
-                melfreq = (melfreq - melfreq.mean(axis=1, keepdims=True)) / melfreq.std(axis=1, keepdims=True)
+                mean = melfreq.mean(axis=1, keepdims=True)
+                std = melfreq.std(axis=1, keepdims=True)
+                if np.count_nonzero(std) != std.size:
+                    for i in range(std.size):
+                        if std[i][0]==0:
+                            std[i][0]=1
+                melfreq = (melfreq - mean) / std
             else:
                 melfreq = (melfreq - melfreq.mean()) / melfreq.std()
             if normMfcc:
                 numpy.save(os.path.join(newdir, data[:-4] + ".npy"), melfreq)
+
+
 
 
 

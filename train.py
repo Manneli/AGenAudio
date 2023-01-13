@@ -7,13 +7,14 @@ NUM_CLASS = 10
 
 def main():
     dataset = dl.AGenDataset("/home/anneli/AGenAudio/train.dataset")
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True,)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True,drop_last = True)
 
     model = audio_model(num_class=NUM_CLASS,length=100)
     model = model.type(torch.float64)
 
     optimizer = torch.optim.Adam(model.parameters(),lr=0.0005)
-    loss = torch.nn.CrossEntropyLoss()
+    #loss = torch.nn.CrossEntropyLoss()
+    loss = torch.nn.MSELoss()
 
     train(model,dataloader,optimizer,loss,num_classes=NUM_CLASS)
     #debug(model,dataloader,optimizer,loss)
@@ -45,19 +46,27 @@ def train(model,dataloader,optimizer,loss_function,epochs=5,num_classes=10):
     for ep in range(epochs):
         print("epochs: ", ep)
         for audio, label in dataloader:
-            audio = torch.slice_copy(audio,dim= 1,start=0,end=100,step=1)
+            audio = torch.slice_copy(audio,dim= 2,start=0,end=100,step=1)
 
             optimizer.zero_grad()
 
-            truth = make_truth(label,num_classes,7,80)
+            # truth = make_truth(label,num_classes,7,80)
             output = model(audio)
+            output = torch.reshape(output,[output.shape[0]])
 
-            loss = loss_function(output,truth)
-            print(truth)
-            print(output)
-            print(loss)
+            loss = loss_function(output,label.type(torch.float64))
+
             loss.backward()
             optimizer.step()
+
+            print("------------")
+            #print(truth)
+            print("loss: ", loss)
+            # for i in range(16):
+            #     output[i] = output[i] == torch.max(output[i])0.type(torch.float64)
+            print("output: ",output)
+            print("label: ",label)
+
 
     torch.save(model.state_dict(), "/home/anneli/AGenAudio/model.pt")
 
