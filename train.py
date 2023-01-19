@@ -9,13 +9,14 @@ def main():
     dataset = dl.AGenDataset("/home/anneli/AGenAudio/train.dataset")
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True,drop_last = True)
 
-    model = audio_model(num_class=NUM_CLASS,length=100)
+    model = audio_model(num_class=NUM_CLASS,length=1132)
     model = model.type(torch.float64)
 
     optimizer = torch.optim.Adam(model.parameters(),lr=0.0005)
     #loss = torch.nn.CrossEntropyLoss()
     loss = torch.nn.MSELoss()
 
+    #tr(model,dataloader,optimizer,loss,num_classes=NUM_CLASS)
     train(model,dataloader,optimizer,loss,num_classes=NUM_CLASS)
     #debug(model,dataloader,optimizer,loss)
 
@@ -40,18 +41,32 @@ def main():
 #
 #
 
+def tr(model,dataloader,optimizer,loss_function,epochs=5,num_classes=10):
+    for ep in range(epochs):
+        print("epochs: ", ep)
+        for audio,length, label in dataloader:
+
+            input = torch.nn.utils.rnn.pack_padded_sequence(audio,lengths=length,batch_first=True,enforce_sorted=False)
+
+            output = model(input)
+
+            print(input.data.shape)
+            print(output)
 
 
+            return
 def train(model,dataloader,optimizer,loss_function,epochs=5,num_classes=10):
     for ep in range(epochs):
         print("epochs: ", ep)
-        for audio, label in dataloader:
-            audio = torch.slice_copy(audio,dim= 2,start=0,end=100,step=1)
+        for audio,length, label in dataloader:
+            input = torch.nn.utils.rnn.pack_padded_sequence(audio, lengths=length, batch_first=True, enforce_sorted=False)
+
+            #input = torch.slice_copy(audio,dim= 2,start=0,end=100,step=1)
 
             optimizer.zero_grad()
 
             # truth = make_truth(label,num_classes,7,80)
-            output = model(audio)
+            output = model(input)
             output = torch.reshape(output,[output.shape[0]])
 
             loss = loss_function(output,label.type(torch.float64))

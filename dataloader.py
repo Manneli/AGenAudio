@@ -43,9 +43,12 @@ class AGenDataset (torch.utils.data.Dataset) :
 
         audio = np.load(data[0])
         #audio = (audio-np.min(audio))/(np.max(audio)-np.min(audio))
-        audio = np.pad(audio,  ((0,0),(0,self.max_length-audio.shape[1])) )
 
-        return torch.as_tensor(audio), torch.as_tensor(int(data[2]))
+        length = audio.shape[1]
+        audio = np.pad(audio,  ((0,0),(0,self.max_length-audio.shape[1])) )
+        audio = audio.transpose()
+
+        return torch.as_tensor(audio),length, torch.as_tensor(int(data[2]))
 
 
 

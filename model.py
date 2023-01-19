@@ -18,19 +18,20 @@ class audio_model(torch.nn.Module):
     def __init__(self, num_features=13 ,num_hidden=512 , num_class = 4, length = 1132):
         super(audio_model,self).__init__()
         # TODO Mask
-        self.norm = torch.nn.BatchNorm1d(num_features=13)
-
         self.lstm = torch.nn.LSTM(input_size=num_features,hidden_size=num_hidden,num_layers=2,
                                    batch_first=True)
 
         self.flat = torch.nn.Flatten()
         self.lin = torch.nn.Linear(in_features=num_hidden*length,out_features=1)
         self.softmax = torch.nn.Softmax(dim = 1)
+        self.length = length
 
 
     def forward(self, input):
-        input = input.permute(0,2,1)
+        #input = input.permute(0,2,1)
         x, states = self.lstm(input)
+        if isinstance(input,torch.nn.utils.rnn.PackedSequence):
+            x = torch.nn.utils.rnn.pad_packed_sequence(x, batch_first=True, total_length=self.length)[0]
         x = self.flat(x)
         x = self.lin(x)
         #x = self.softmax(x)
